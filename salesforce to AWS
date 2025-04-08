@@ -1,0 +1,40 @@
+Salesforce Side Setup
+
+Component                          Purpose
+Connected App / OAuth             Create a connected app in Salesforce to enable secure API access (OAuth2).
+API Access                        Ensure API access is enabled for your Salesforce org (Enterprise/Unlimited Edition or API add-on for Professional).
+Data Model Understanding          Analyze Salesforce objects (standard/custom), relationships, and dependencies.
+SQL Queries / Reports             Prepare SOQL queries or reports to fetch the required data.
+Security Policies                 Ensure compliance with data access and export policies.
+Sandbox for Testing               Use a sandbox org for trial runs and schema validation.
+
+
+AWS Side Setup
+
+Component      Purpose
+Amazon S3      Acts as a landing zone to store extracted Salesforce data (CSV/JSON).
+AWS Glue       Catalog, transform, and clean the raw data from S3 (ETL pipeline).
+AWS Lambda     Automate data processing after landing in S3 or transform on the fly.
+AWS EMR        Infra for pyspark jobs 
+Amazon Redshift / Athena   Use for analytics and reporting over structured data.
+Amazon DynamoDB (Optional)  Use for fast NoSQL access if data needs to be queried via APIs.
+AWS DMS (optional)         If using database sync/mirroring via intermediary database, DMS can help.
+Step Functions (Optional)    Orchestrate the full migration workflow across Lambda, Glue, etc.
+IAM Roles & Policies    Secure access between services with least privilege access model.
+Monitoring (CloudWatch)    Log pipeline executions, errors, and data integrity validations.
+
+
+Tools You Can Use
+
+Task  Tools
+Extraction  Python + simple-salesforce, Salesforce CLI, Talend, Mulesoft
+Scheduling   AWS Step Functions, Airflow, EventBridge
+Transformation  AWS Glue, PySpark, Pandas
+Validation   Lambda scripts, Athena Queries
+Analytics    Amazon Redshift, Athena, QuickSight
+
+
+
+
+
+
