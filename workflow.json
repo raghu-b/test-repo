@@ -1,0 +1,80 @@
+{
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "$connections": {
+            "value": {
+                "azureblob": {
+                    "connectionId": "/subscriptions/30d95dd8-b67c-4580-ac15-80d201767fe6/resourceGroups/myResourceGroup/providers/Microsoft.Web/connections/azureblob",
+                    "connectionName": "azureblob",
+                    "id": "/subscriptions/30d95dd8-b67c-4580-ac15-80d201767fe6/providers/Microsoft.Web/locations/eastus/managedApis/azureblob"
+                },
+                "sql": {
+                    "id": "/subscriptions/30d95dd8-b67c-4580-ac15-80d201767fe6/providers/Microsoft.Web/locations/eastus/managedApis/sql",
+                    "connectionId": "/subscriptions/30d95dd8-b67c-4580-ac15-80d201767fe6/resourceGroups/myResourceGroup/providers/Microsoft.Web/connections/sql",
+                    "connectionName": "sql-connection"
+                }
+            }
+        }
+},
+
+    "triggers": {
+      "When_a_blob_is_added_or_modified_(properties_only)" : {
+        "recurrence" : {
+          "frequency" : "Minute",
+          "interval" : 5
+        },
+        "splitOn" : "@triggerBody()",
+        "type" : "ApiConnection",
+        "inputs" : {
+          "host" : {
+            "connection" : {
+              "name" : "@parameters('$connections')['azureblob']['connectionId']"
+            }
+          },
+          "method" : "get",
+          "path" : "/datasets/default/triggers/batch/onupdatedfile",
+          "queries" : {
+            "folderPath" : "/",
+            "maxFileCount" : 1,
+            "notificationUrl" : "https://logic-apis.azure.com/subscriptions/30d95dd8-b67c-4580-ac15-80d201767fe6/resourceGroups/myResourceGroup/providers/Microsoft.Logic/workflows/myLogicApp/triggers/When_a_blob_is_added_or_modified_(properties_only)/callback",
+            "pollForEmptyFile" : false
+          }
+        }
+      }
+    },
+    "actions": {
+      "Get_blob_content": {
+        "type": "ApiConnection",
+        "inputs": {
+          "host": {
+            "connection": {
+              "name": "@parameters('$connections')['azureblob']['connectionId']"
+            }
+          },
+          "method": "get",
+          "path": "/datasets/default/files/@{triggerOutputs()?['headers']['x-ms-file-name']}/content"
+        },
+        "Insert_row" : {
+          "inputs": {
+            "host": {
+              "connection": {
+                "name": "@parameters('$connections')['sql']['connectionId']"
+              }
+            },
+            "method": "post",
+            "path": "/datasets/default/tables/<table_name>/items",
+            "body": {
+              "Column1": "@{body('Get_blob_content')?['Column1']}",
+              "Column2": "@{body('Get_blob_content')?['Column2']}"
+            }
+          },
+          "runAfter": {
+            "Get_blob_content": [
+              "Succeeded"
+            ]
+          }
+        }
+      }
+    }
+}
